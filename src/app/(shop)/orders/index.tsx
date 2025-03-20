@@ -60,11 +60,11 @@ const Orders = () => {
       <Stack.Screen options={{ title: 'Orders' }} />
       <FlatList
         data={orders}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={(item) => item?.id?.toString()}
         renderItem={renderItem}
       />
     </View>
-  );
+  )
 };
 
 export default Orders;

@@ -70,9 +70,14 @@ const ProductDetails = () => {
 
   const totalPrice = (product.price * quantity).toFixed(2)
 
+  console.log(product)
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: product.title }} />
+      <Stack.Screen
+        options={{
+          title: product.title ? product.title : 'Loading details...',
+        }}
+      />
 
       <Image source={{ uri: product.heroImage }} style={styles.heroImage} />
 

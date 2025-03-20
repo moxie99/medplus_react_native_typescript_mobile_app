@@ -10,8 +10,11 @@ import {
 } from 'react-native'
 import { useCartStore } from '../store/cart-store'
 import { StatusBar } from 'expo-status-bar'
+import { Ionicons } from '@expo/vector-icons'
 import { createOrder, createOrderItem } from '../api/api'
 import { openStripeCheckout, setupStripePaymentSheet } from '../lib/stripe'
+import { useNavigation } from 'expo-router'
+import { useEffect } from 'react'
 
 type CartItemType = {
   id: number
@@ -77,6 +80,26 @@ export default function Cart() {
     getTotalPrice,
     resetCart,
   } = useCartStore()
+  const navigation = useNavigation()
+
+  useEffect(() => {
+    if (items?.length > 0) {
+      navigation.setOptions({
+        headerRight: () => (
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.closeButton}
+          >
+            <Ionicons name='close' size={24} color='white' />
+          </TouchableOpacity>
+        ),
+      })
+    } else {
+      navigation.setOptions({
+        headerRight: () => null,
+      })
+    }
+  }, [navigation, items])
 
   const { mutateAsync: createSupabaseOrder } = createOrder()
   const { mutateAsync: createSupabaseOrderItem } = createOrderItem()
@@ -106,6 +129,7 @@ export default function Cart() {
                 onSuccess: () => {
                   alert('Order created successfully')
                   resetCart()
+                  navigation.goBack()
                 },
               }
             )
@@ -121,28 +145,43 @@ export default function Cart() {
   return (
     <View style={styles.container}>
       <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
-
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <CartItem
-            item={item}
-            onRemove={removeItem}
-            onIncrement={incrementItem}
-            onDecrement={decrementItem}
-          />
-        )}
-        contentContainerStyle={styles.cartList}
-      />
+      {items?.length > 0 ? (
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <CartItem
+              item={item}
+              onRemove={removeItem}
+              onIncrement={incrementItem}
+              onDecrement={decrementItem}
+            />
+          )}
+          contentContainerStyle={styles.cartList}
+        />
+      ) : (
+        <View style={{ marginTop: 10, marginBottom: 10 }}>
+          <Text
+            style={{ textAlign: 'justify', fontWeight: '700', fontSize: 14 }}
+          >
+            Your cart is currently empty, kindly proceed to the shop to add to
+            cart.
+          </Text>
+        </View>
+      )}
 
       <View style={styles.footer}>
         <Text style={styles.totalText}>Total: ₦{getTotalPrice()}</Text>
+
         <TouchableOpacity
-          onPress={handleCheckout}
+          onPress={() => {
+            items?.length > 0 ? handleCheckout() : navigation.goBack()
+          }}
           style={styles.checkoutButton}
         >
-          <Text style={styles.checkoutButtonText}>Checkout</Text>
+          <Text style={styles.checkoutButtonText}>
+            {items?.length > 0 ? 'Checkout' : 'Go to Shop'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -154,6 +193,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     paddingHorizontal: 16,
+  },
+  closeButton: {
+    marginRight: 16,
+    backgroundColor: '#ff0077',
+    height: 28,
+    width: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cartList: {
     paddingVertical: 16,

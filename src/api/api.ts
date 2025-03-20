@@ -95,16 +95,18 @@ export const getMyOrders = () => {
 };
 
 export const createOrder = () => {
-  const {
-    user: { id },
-  } = useAuth();
-
-  const slug = generateOrderSlug();
-
-  const queryClient = useQueryClient();
+  const auth = useAuth()
+  const queryClient = useQueryClient()
 
   return useMutation({
     async mutationFn({ totalPrice }: { totalPrice: number }) {
+      if (!auth?.user) {
+        throw new Error('User not authenticated')
+      }
+
+      const slug = generateOrderSlug()
+      const { id } = auth.user
+
       const { data, error } = await supabase
         .from('order')
         .insert({
@@ -114,21 +116,22 @@ export const createOrder = () => {
           status: 'Pending',
         })
         .select('*')
-        .single();
+        .single()
 
       if (error)
         throw new Error(
           'An error occurred while creating order: ' + error.message
-        );
+        )
 
-      return data;
+      return data
     },
 
     async onSuccess() {
-      await queryClient.invalidateQueries({ queryKey: ['order'] });
+      await queryClient.invalidateQueries({ queryKey: ['order'] })
     },
-  });
-};
+  })
+}
+
 
 export const createOrderItem = () => {
   return useMutation({

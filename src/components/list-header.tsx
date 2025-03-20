@@ -14,6 +14,7 @@ import { useCartStore } from '../store/cart-store'
 import { supabase } from '../lib/supabase'
 import { Tables } from '../types/database.types'
 import { useAuth } from '../providers/auth-provider'
+import CarouselView from './CarouselView'
 
 export const ListHeader = ({
   categories,
@@ -26,8 +27,17 @@ export const ListHeader = ({
   const handleSignOut = async () => {
     await supabase.auth.signOut()
   }
+  const currentHour = new Date().getHours()
+  const getGreeting = () => {
+    if (currentHour < 12) {
+      return 'Good morning ☀️'
+    } else if (currentHour < 18) {
+      return 'Good afternoon 🌤️'
+    } else {
+      return 'Good evening 🌙'
+    }
+  }
 
-  console.log('========>>>>>>>', user)
   return (
     <View style={[styles.headerContainer]}>
       <View style={styles.headerTop}>
@@ -37,7 +47,7 @@ export const ListHeader = ({
               source={{ uri: 'https://via.placeholder.com/40' }}
               style={styles.avatarImage}
             />
-            <Text style={styles.avatarText}>Hello Moxie</Text>
+            <Text style={styles.avatarText}>{getGreeting()}</Text>
           </View>
         </View>
         <View style={styles.headerRight}>
@@ -67,12 +77,7 @@ export const ListHeader = ({
           </TouchableOpacity>
         </View>
       </View>
-      <View style={styles.heroContainer}>
-        <Image
-          source={require('../../assets/images/hero.png')}
-          style={styles.heroImage}
-        />
-      </View>
+      <CarouselView />
       <View style={styles.categoriesContainer}>
         <Text style={styles.sectionTitle}>Categories</Text>
         <FlatList
@@ -99,7 +104,7 @@ export const ListHeader = ({
 
 const styles = StyleSheet.create({
   headerContainer: {
-    gap: 20,
+    gap: 10,
   },
   headerTop: {
     flexDirection: 'row',

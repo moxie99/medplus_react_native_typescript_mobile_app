@@ -1,5 +1,5 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
-import Stripe from 'npm:stripe@^16.10.0';
+import Stripe from 'npm:stripe@^17.4.0'
 
 export const stripe = Stripe(Deno.env.get('STRIPE_SECRET_KEY'), {
   // This is needed to use the Fetch API rather than relying on the Node http
